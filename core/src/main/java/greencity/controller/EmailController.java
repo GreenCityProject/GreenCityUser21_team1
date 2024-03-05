@@ -74,6 +74,7 @@ public class EmailController {
     public ResponseEntity<Object> sendHabitNotification(@RequestBody SendHabitNotification sendHabitNotification) {
         emailService.sendHabitNotification(sendHabitNotification.getName(), sendHabitNotification.getEmail());
         return ResponseEntity.status(HttpStatus.OK).build();
+        //test
     }
 
     /**
