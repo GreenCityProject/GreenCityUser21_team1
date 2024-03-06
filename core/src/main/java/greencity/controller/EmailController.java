@@ -85,7 +85,7 @@ public class EmailController {
      * @author Zakhar Veremchuk
      */
     @PostMapping("/sendUserViolation")
-    public ResponseEntity<Object> sendUserViolation(@RequestBody UserViolationMailDto dto) {
+    public ResponseEntity<Object> sendUserViolation(@RequestBody @Validated UserViolationMailDto dto) {
         emailService.sendUserViolationEmail(dto);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
