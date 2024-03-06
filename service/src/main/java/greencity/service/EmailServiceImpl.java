@@ -13,6 +13,7 @@ import greencity.dto.user.PlaceAuthorDto;
 import greencity.dto.user.UserActivationDto;
 import greencity.dto.user.UserDeactivationReasonDto;
 import greencity.dto.violation.UserViolationMailDto;
+import greencity.exception.exceptions.EmailNotVerified;
 import greencity.exception.exceptions.NotFoundException;
 import greencity.repository.UserRepo;
 import jakarta.mail.MessagingException;
@@ -244,7 +245,7 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void sendHabitNotification(String name, String email) {
-        userRepo.findByEmail(email).orElseThrow(() -> new NotFoundException("Email " + email + " is not found"));
+        userRepo.findByEmail(email).orElseThrow(() -> new EmailNotVerified("Email " + email + " is not found"));
         String subject = "Notification about not marked habits";
         String content = "Dear " + name + ", you haven't marked any habit during last 3 days";
         sendEmail(email, subject, content);
