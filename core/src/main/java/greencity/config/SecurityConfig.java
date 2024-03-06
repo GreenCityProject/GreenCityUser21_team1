@@ -157,6 +157,7 @@ public class SecurityConfig {
                                 "/user/{userId}/habit",
                                 "/ownSecurity/set-password",
                                 "/email/sendHabitNotification",
+                                "/email/sendUserViolation",
                                 "/email/sendReport",
                                 "/email/addEcoNews",
                                 "/email/changePlaceStatus",
