@@ -4,6 +4,7 @@ import greencity.constant.HttpStatuses;
 import greencity.dto.econews.EcoNewsForSendEmailDto;
 import greencity.dto.notification.NotificationDto;
 import greencity.dto.violation.UserViolationMailDto;
+import greencity.exception.exceptions.NotFoundException;
 import greencity.message.SendChangePlaceStatusEmailMessage;
 import greencity.message.SendHabitNotification;
 import greencity.message.SendReportEmailMessage;
@@ -30,9 +31,18 @@ public class EmailController {
      * @param message - object with all necessary data for sending email
      * @author Taras Kavkalo
      */
+    @Operation(summary = "Add eco news")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
+    })
     @PostMapping("/addEcoNews")
     public ResponseEntity<Object> addEcoNews(@RequestBody EcoNewsForSendEmailDto message) {
-        emailService.sendCreatedNewsForAuthor(message);
+        try {
+            emailService.sendCreatedNewsForAuthor(message);
+        } catch (NotFoundException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
