@@ -15,6 +15,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -71,7 +72,7 @@ public class EmailController {
      * @author Taras Kavkalo
      */
     @PostMapping("/sendHabitNotification")
-    public ResponseEntity<Object> sendHabitNotification(@RequestBody SendHabitNotification sendHabitNotification) {
+    public ResponseEntity<Object> sendHabitNotification(@RequestBody @Validated SendHabitNotification sendHabitNotification) {
         emailService.sendHabitNotification(sendHabitNotification.getName(), sendHabitNotification.getEmail());
         return ResponseEntity.status(HttpStatus.OK).build();
     }
@@ -84,7 +85,7 @@ public class EmailController {
      * @author Zakhar Veremchuk
      */
     @PostMapping("/sendUserViolation")
-    public ResponseEntity<Object> sendUserViolation(@RequestBody UserViolationMailDto dto) {
+    public ResponseEntity<Object> sendUserViolation(@RequestBody @Validated UserViolationMailDto dto) {
         emailService.sendUserViolationEmail(dto);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
