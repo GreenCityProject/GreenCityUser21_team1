@@ -44,6 +44,8 @@ public class SecurityConfig {
     private final UserService userService;
     private static final String USER_LINK = "/user";
     private final AuthenticationConfiguration authenticationConfiguration;
+    private final JwtAuthenticationEntryPoint unauthorizedHandler;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
 
     /**
      * Constructor.
@@ -51,10 +53,12 @@ public class SecurityConfig {
 
     @Autowired
     public SecurityConfig(JwtTool jwtTool, UserService userService,
-                          AuthenticationConfiguration authenticationConfiguration) {
+                          AuthenticationConfiguration authenticationConfiguration, JwtAuthenticationEntryPoint unauthorizedHandler, CustomAccessDeniedHandler accessDeniedHandler) {
         this.jwtTool = jwtTool;
         this.userService = userService;
         this.authenticationConfiguration = authenticationConfiguration;
+        this.unauthorizedHandler = unauthorizedHandler;
+        this.accessDeniedHandler = accessDeniedHandler;
     }
 
     /**
@@ -92,10 +96,8 @@ public class SecurityConfig {
                         new AccessTokenAuthenticationFilter(jwtTool, authenticationManager(), userService),
                         UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint((req, resp, exc) -> resp.sendError(
-                                SC_UNAUTHORIZED, "Authorize first."))
-                        .accessDeniedHandler((req, resp, exc) -> resp.sendError(
-                                SC_FORBIDDEN, "You don't have authorities.")))
+                        .authenticationEntryPoint(unauthorizedHandler)
+                        .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(req -> req
                         .requestMatchers("/static/css/**", "/static/img/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
