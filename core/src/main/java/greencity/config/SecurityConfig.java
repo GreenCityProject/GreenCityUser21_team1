@@ -44,8 +44,6 @@ public class SecurityConfig {
     private final UserService userService;
     private static final String USER_LINK = "/user";
     private final AuthenticationConfiguration authenticationConfiguration;
-    private final JwtAuthenticationEntryPoint unauthorizedHandler;
-    private final CustomAccessDeniedHandler accessDeniedHandler;
 
     /**
      * Constructor.
@@ -53,12 +51,10 @@ public class SecurityConfig {
 
     @Autowired
     public SecurityConfig(JwtTool jwtTool, UserService userService,
-                          AuthenticationConfiguration authenticationConfiguration, JwtAuthenticationEntryPoint unauthorizedHandler, CustomAccessDeniedHandler accessDeniedHandler) {
+                          AuthenticationConfiguration authenticationConfiguration) {
         this.jwtTool = jwtTool;
         this.userService = userService;
         this.authenticationConfiguration = authenticationConfiguration;
-        this.unauthorizedHandler = unauthorizedHandler;
-        this.accessDeniedHandler = accessDeniedHandler;
     }
 
     /**
@@ -96,8 +92,10 @@ public class SecurityConfig {
                         new AccessTokenAuthenticationFilter(jwtTool, authenticationManager(), userService),
                         UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(unauthorizedHandler)
-                        .accessDeniedHandler(accessDeniedHandler))
+                        .authenticationEntryPoint((req, resp, exc) -> resp.sendError(
+                                SC_UNAUTHORIZED, "Authorize first."))
+                        .accessDeniedHandler((req, resp, exc) -> resp.sendError(
+                                SC_FORBIDDEN, "You don't have authorities.")))
                 .authorizeHttpRequests(req -> req
                         .requestMatchers("/static/css/**", "/static/img/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -118,7 +116,7 @@ public class SecurityConfig {
                                 "/ownSecurity/restorePassword",
                                 "/googleSecurity",
                                 "/facebookSecurity/generateFacebookAuthorizeURL",
-                                "/facebookSecurity/facebook", "/user/emailNotifications",
+                                "/facebookSecurity/facebook",
                                 "/user/activatedUsersAmount",
                                 "/user/{userId}/habit/assign",
                                 "/token",
@@ -152,6 +150,7 @@ public class SecurityConfig {
                                 "/user/createUbsRecord",
                                 "/user/{userId}/sixUserFriends/",
                                 "/ownSecurity/password-status",
+                                "/user/emailNotifications",
                                 "/user/emailNotifications")
                         .hasAnyRole(USER, ADMIN, UBS_EMPLOYEE, MODERATOR, EMPLOYEE)
                         .requestMatchers(HttpMethod.POST, USER_LINK,
