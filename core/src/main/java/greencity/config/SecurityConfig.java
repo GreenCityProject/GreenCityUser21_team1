@@ -3,6 +3,8 @@ package greencity.config;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
+import greencity.exception.handler.CustomAccessDeniedHandler;
+import greencity.exception.handler.JwtAuthenticationEntryPoint;
 import greencity.security.filters.AccessTokenAuthenticationFilter;
 import greencity.security.jwt.JwtTool;
 import greencity.security.providers.JwtAuthenticationProvider;
@@ -26,8 +28,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import java.util.Arrays;
 import java.util.Collections;
 import static greencity.constant.AppConstant.*;
-import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
-import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 /**
@@ -44,6 +44,8 @@ public class SecurityConfig {
     private final UserService userService;
     private static final String USER_LINK = "/user";
     private final AuthenticationConfiguration authenticationConfiguration;
+    private final JwtAuthenticationEntryPoint unauthorizedHandler;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     /**
      * Constructor.
@@ -51,10 +53,12 @@ public class SecurityConfig {
 
     @Autowired
     public SecurityConfig(JwtTool jwtTool, UserService userService,
-                          AuthenticationConfiguration authenticationConfiguration) {
+                          AuthenticationConfiguration authenticationConfiguration, JwtAuthenticationEntryPoint unauthorizedHandler, CustomAccessDeniedHandler customAccessDeniedHandler) {
         this.jwtTool = jwtTool;
         this.userService = userService;
         this.authenticationConfiguration = authenticationConfiguration;
+        this.unauthorizedHandler = unauthorizedHandler;
+        this.customAccessDeniedHandler = customAccessDeniedHandler;
     }
 
     /**
@@ -92,10 +96,8 @@ public class SecurityConfig {
                         new AccessTokenAuthenticationFilter(jwtTool, authenticationManager(), userService),
                         UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint((req, resp, exc) -> resp.sendError(
-                                SC_UNAUTHORIZED, "Authorize first."))
-                        .accessDeniedHandler((req, resp, exc) -> resp.sendError(
-                                SC_FORBIDDEN, "You don't have authorities.")))
+                        .authenticationEntryPoint(unauthorizedHandler)
+                        .accessDeniedHandler(customAccessDeniedHandler))
                 .authorizeHttpRequests(req -> req
                         .requestMatchers("/static/css/**", "/static/img/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
